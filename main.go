@@ -174,7 +174,7 @@ func printMaze() {
 }
 
 ansi.MoveCursor(player.row, player.col)
-fmt.Print("P")
+fmt.Print("😺")
 
 // Move cursor outside of maze drawing area
 ansi.MoveCursor(len(maze)+1, 0)

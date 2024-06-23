@@ -2,11 +2,19 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
-	"os/exec"
+	"os/exec"q
+
+	"github.com/gcjbr/gopacman/ansi"
 )
 
+type sprite struct {
+	row, col int
+}
+
 var maze []string
+var player sprite
 
 func main() {
 	initialize()
@@ -25,6 +33,8 @@ func main() {
 			println("Error reading input:", err)
 			break
 		}
+
+		movePlayer(input)
 
 		if input == "ESC" {
 			break
@@ -55,9 +65,61 @@ func readInput() (string, error) {
 
 	if cnt == 1 && buffer[0] == 0x1b {
 		return "ESC", nil
+	} else if cnt >= 3 {
+		if buffer[0] == 0x1b && buffer[1] == '[' {
+			switch buffer[2] {
+			case 'A':
+				return "UP", nil
+			case 'B':
+				return "DOWN", nil
+			case 'C':
+				return "RIGHT", nil
+			case 'D':
+				return "LEFT", nil
+		}
 	}
+}
 
 	return "", nil
+}
+
+
+func movePlayer(dir string) {
+	player.row, player.col = makeMove(player.row, player.col, dir)
+}
+
+func makeMove(oldRow, oldCol int, dir string) (newRow, newCol int) {
+	newRow, newCol = oldRow, oldCol
+
+	switch dir {
+	case "UP":
+			newRow = newRow - 1
+			if newRow < 0 {
+					newRow = len(maze) - 1
+			}
+	case "DOWN":
+			newRow = newRow + 1
+			if newRow == len(maze) {
+					newRow = 0
+			}
+	case "RIGHT":
+			newCol = newCol + 1
+			if newCol == len(maze[0]) {
+					newCol = 0
+			}
+	case "LEFT":
+			newCol = newCol - 1
+			if newCol < 0 {
+					newCol = len(maze[0]) - 1
+			}
+	}
+
+	if maze[newRow][newCol] == '#' {
+			newRow = oldRow
+			newCol = oldCol
+	}
+
+	return
 }
 
 func cleanup() {
@@ -84,11 +146,37 @@ func loadMaze(mazeFile string) error {
 		maze = append(maze, scanner.Text())
 	}
 
+	for row, line := range maze {
+		for col, char := range line {
+			switch char {
+			case 'P':
+				player.row = row
+				player.col = col
+			}
+		}
+	}
+
 	return nil
 }
 
 func printMaze() {
-	for _, row := range maze {
-		println(row)
-	}
+	ansi.ClearScreen()
+	for _, line := range maze {
+		for _, chr := range line {
+				switch chr {
+				case '#':
+						fmt.Printf("%c", chr)
+				default:
+						fmt.Print(" ")
+				}
+		}
+		fmt.Println()
 }
+
+ansi.MoveCursor(player.row, player.col)
+fmt.Print("P")
+
+// Move cursor outside of maze drawing area
+ansi.MoveCursor(len(maze)+1, 0)
+}
+

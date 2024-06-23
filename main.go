@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"q
+	"os/exec"
 
 	"github.com/gcjbr/gopacman/ansi"
 )
